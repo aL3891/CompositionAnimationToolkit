@@ -4,8 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Composition;
 
@@ -13,18 +11,17 @@ namespace CompositionAnimationToolkit
 {
     public static class CompositionAnimationExtensions
     {
-
-        public static ExpressionAnimation ExpressionLambda<T>(this ExpressionAnimation animation, Expression<Func<ExpressionContext, T>> expression)
+        public static Dictionary<string, object> ExpressionLambda<T>(this ExpressionAnimation animation, Expression<Func<ExpressionContext, T>> expression)
         {
-            var ce = Expression(expression);
+            var ce = ExpressionToCompositionExpression(expression);
             animation.Expression = ce.Expression;
             animation.ApplyParameters(ce.Parameters);
-            return animation;
+            return ce.Parameters;
         }
-        
+
         public static KeyFrameAnimation InsertExpressionLambdaKeyFrame<T>(this KeyFrameAnimation animation, float normalizedProgressKey, Expression<Func<ExpressionContext, T>> expression)
         {
-            var ce = Expression(expression);
+            var ce = ExpressionToCompositionExpression(expression);
             animation.InsertExpressionKeyFrame(normalizedProgressKey, ce.Expression);
 
             animation.ApplyParameters(ce.Parameters);
@@ -33,33 +30,46 @@ namespace CompositionAnimationToolkit
 
         public static T ApplyParameters<T>(this T animation, Dictionary<string, object> parameters) where T : CompositionAnimation
         {
-            foreach (var p in parameters)
+            foreach (var p in parameters.Keys.ToList())
             {
-                var type = p.Value.GetType();
+                var type = parameters[p].GetType();
 
                 if (type == typeof(float))
-                    animation.SetScalarParameter(p.Key, (float)p.Value);
-                else if (p.Value is CompositionObject)
-                    animation.SetReferenceParameter(p.Key, (CompositionObject)p.Value);
+                    animation.SetScalarParameter(p, (float)parameters[p]);
+                else if (parameters[p] is CompositionObject)
+                    animation.SetReferenceParameter(p, (CompositionObject)parameters[p]);
+                else if (parameters[p] is CompositionPropertySetWrapper)
+                {
+                    parameters[p] = ((CompositionPropertySetWrapper)parameters[p]).PropertySet;
+                    animation.SetReferenceParameter(p, (CompositionObject)parameters[p]);
+                }
                 else if (type == typeof(Vector2))
-                    animation.SetVector2Parameter(p.Key, (Vector2)p.Value);
+                    animation.SetVector2Parameter(p, (Vector2)parameters[p]);
                 else if (type == typeof(Vector3))
-                    animation.SetVector3Parameter(p.Key, (Vector3)p.Value);
+                    animation.SetVector3Parameter(p, (Vector3)parameters[p]);
                 else if (type == typeof(Vector4))
-                    animation.SetVector4Parameter(p.Key, (Vector4)p.Value);
+                    animation.SetVector4Parameter(p, (Vector4)parameters[p]);
                 else if (type == typeof(Matrix3x2))
-                    animation.SetMatrix3x2Parameter(p.Key, (Matrix3x2)p.Value);
+                    animation.SetMatrix3x2Parameter(p, (Matrix3x2)parameters[p]);
                 else if (type == typeof(Matrix4x4))
-                    animation.SetMatrix4x4Parameter(p.Key, (Matrix4x4)p.Value);
+                    animation.SetMatrix4x4Parameter(p, (Matrix4x4)parameters[p]);
                 else if (type == typeof(Quaternion))
-                    animation.SetQuaternionParameter(p.Key, (Quaternion)p.Value);
+                    animation.SetQuaternionParameter(p, (Quaternion)parameters[p]);
                 else if (type == typeof(Color))
-                    animation.SetColorParameter(p.Key, (Color)p.Value);
+                    animation.SetColorParameter(p, (Color)parameters[p]);
+                else
+                {
+                    parameters[p] = CompositionPropertySetExtensions.ToPropertySet(parameters[p], animation.Compositor);
+                    animation.SetReferenceParameter(p, (CompositionObject)parameters[p]);
+                }
+
             }
             return animation;
         }
 
-        public static CompositionExpression Expression<T>(Expression<Func<ExpressionContext, T>> expression)
+
+
+        public static CompositionExpression ExpressionToCompositionExpression<T>(Expression<Func<ExpressionContext, T>> expression)
         {
             var parameters = new Dictionary<string, object>();
             return new CompositionExpression { Expression = ExpressionToCompositionString(expression, parameters), Parameters = parameters };
@@ -76,6 +86,7 @@ namespace CompositionAnimationToolkit
                 return m.Member.Name;
             }
         }
+
 
         static string GetBinaryExpression(BinaryExpression b, Dictionary<string, object> parameters)
         {
@@ -219,6 +230,8 @@ namespace CompositionAnimationToolkit
                 case ExpressionType.PreDecrementAssign:
                     operand = "--";
                     break;
+                case ExpressionType.Convert:
+                    return ExpressionToCompositionString(u.Operand, parameters);
                 case ExpressionType.PostIncrementAssign:
                     return GetExpressionWithParameters(u.Operand, parameters) + "++";
                 case ExpressionType.PostDecrementAssign:
