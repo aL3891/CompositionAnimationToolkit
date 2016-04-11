@@ -28,9 +28,7 @@ Using the a lambda expression this can instead be written as
     expressionAnimation.ExpressionLambda(c => redSprite.Offset + propertySet.Get<Vector3>("CenterPointOffset")
         + c.Vector3(c.Cos(c.ToRadians(propertySet.Get<float>("Rotation"))) * 150, c.Sin(c.ToRadians(propertySet.Get<float>("Rotation"))) * 75, 0));
 
-
 And the SetReferenceParameter calls can be left out
-
 
 Additionally, the property set can be defined as anonymous class instead:
 
@@ -49,7 +47,7 @@ To be able to pass around property sets, there is also a class called Compositio
 
     public class MyPropertySet : CompositionPropertySetWrapper
     {
-        public PropertySet(Compositor comp) : base(comp)          {           }
+        public PropertySet(Compositor comp) : base(comp) { }
         public float Rotation { get { return GetScalar(); } set { SetValue(value); } }
         public Vector3 CenterPointOffset { get { return GetVector3(); } set { SetValue(value); } }
     }
