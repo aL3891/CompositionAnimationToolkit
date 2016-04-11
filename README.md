@@ -47,7 +47,7 @@ To be able to pass around property sets, there is also a class called Compositio
 
     public class MyPropertySet : CompositionPropertySetWrapper
     {
-        public PropertySet(Compositor comp) : base(comp) { }
+        public MyPropertySet(Compositor comp) : base(comp) { }
         public float Rotation { get { return GetScalar(); } set { SetValue(value); } }
         public Vector3 CenterPointOffset { get { return GetVector3(); } set { SetValue(value); } }
     }
