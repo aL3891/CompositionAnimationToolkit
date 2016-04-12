@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq.Expressions;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Windows.UI;
@@ -18,6 +19,17 @@ namespace CompositionAnimationToolkit
         public CompositionPropertySetWrapper(CompositionPropertySet propertySet)
         {
             PropertySet = propertySet;
+        }
+
+
+        public void StartAnimation(string propertyName, CompositionAnimation animation)
+        {
+            PropertySet.StartAnimation(propertyName, animation);
+        }
+
+        public void StopAnimation(string propertyName)
+        {
+            PropertySet.StopAnimation(propertyName);
         }
 
         protected Color GetColor([CallerMemberName]string key = "")
@@ -132,5 +144,27 @@ namespace CompositionAnimationToolkit
             PropertySet.InsertVector4(key, value);
         }
 
+
+    }
+
+    public static class CompositionPropertySetWrapperExtensions
+    {
+        public static void StartAnimation2<T, R>(this T compositionObject, Expression<Func<T, R>> expression, CompositionAnimation animation) where T : CompositionPropertySetWrapper
+        {
+            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
+            if (property == null)
+                throw new ArgumentException();
+
+            compositionObject.StartAnimation(property, animation);
+        }
+
+        public static void StopAnimation2<T, R>(this T compositionObject, Expression<Func<T, R>> expression) where T : CompositionPropertySetWrapper
+        {
+            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
+            if (property == null)
+                throw new ArgumentException();
+
+            compositionObject.StopAnimation(property);
+        }
     }
 }

@@ -104,10 +104,14 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .Net Framework and Windows SDK are automatically included -->
+    <None Include="CompositionAnimationToolkit.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="project.json" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompositionExpression.cs" />
+    <Compile Include="CompositionObjectExtensions.cs" />
     <Compile Include="CompositionPropertySetExtensions.cs" />
     <Compile Include="CompositionPropertySetWrapper.cs" />
     <Compile Include="LambdaExpression.cs" />
