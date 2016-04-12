@@ -56,12 +56,21 @@ The ExpressionLambda will also return a dictionary with all the parameters used 
     var props = expressionAnimation.ExpressionLambda(...);
     ((CompositionPropertySet)props["propertySet"]).StartAnimation("Rotation", rotAnimation);
 
+## Starting animations with a lambda
+It's now possible to start/stop animations using a lambda as well:
+
+    blueSprite.StartAnimation(r => r.Offset, expressionAnimation);
+    
+Due to how generic constrains work though, the method for property set wrappers is called `StartAnimation2`
+
 ## Future work
 This library has partially been validated against the samples in https://github.com/Microsoft/WindowsUIDevLabs (in this branch https://github.com/aL3891/WindowsUIDevLabs) but that work is not complete.
 In addition i'd like to look at if story boards can perhaps be converted to composition animations. Another idea is to implement currently unsupported functions like dot product as expanded expressions.
 
-Other stuff:
-* Nuget
-* Extension methods for statically typed starting of animations 
-
 If you have any ideas for things you'd like to see, or any other feedback, please do create an issue!
+
+## Nuget
+This library is now on nuget! 
+
+    Install-Package CompositionAnimationToolkit -Pre 
+
