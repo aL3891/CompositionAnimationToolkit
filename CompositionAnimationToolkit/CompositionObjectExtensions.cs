@@ -10,23 +10,44 @@ namespace CompositionAnimationToolkit
 {
     public static class CompositionObjectExtensions
     {
-        public static void StartAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, CompositionAnimation animation) where T : CompositionObject
+        public static TargetedCompositionAnimation StartAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, Expression<Func<ExpressionContext<R, T>, object>> animationexpression) where T : CompositionObject
         {
-            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
-            if (property == null)
-                throw new ArgumentException();
+            var property = CompositionAnimationExtensions.ExpressionToPropertyName(expression);
+            var animation = compositionObject.Compositor.CreateExpressionAnimation();
+            var props = animation.ExpressionLambda(animationexpression);
 
             compositionObject.StartAnimation(property, animation);
+
+            return new TargetedCompositionAnimation
+            {
+                Animation = animation,
+                Properties = props,
+                Target = compositionObject,
+                TargetProperty = property
+            };
+        }
+
+
+        public static void StartAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, CompositionAnimation animation) where T : CompositionObject
+        {
+
+            compositionObject.StartAnimation(CompositionAnimationExtensions.ExpressionToPropertyName(expression), animation);
         }
 
         public static void StopAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression) where T : CompositionObject
         {
-            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
-            if (property == null)
-                throw new ArgumentException();
 
-            compositionObject.StopAnimation(property);
+            compositionObject.StopAnimation(CompositionAnimationExtensions.ExpressionToPropertyName(expression));
         }
 
+        public static TypeAnnotatedCompositionObject<R> AsAnnotated<R>(this CompositionObject input, R instance)
+        {
+            return new TypeAnnotatedCompositionObject<R> { Target = input };
+        }
+
+        public static TypeAnnotatedCompositionObject<T> AsAnnotated<T>(this CompositionObject input)
+        {
+            return new TypeAnnotatedCompositionObject<T> { Target = input };
+        }
     }
 }

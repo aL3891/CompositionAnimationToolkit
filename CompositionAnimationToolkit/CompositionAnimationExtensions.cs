@@ -11,7 +11,7 @@ namespace CompositionAnimationToolkit
 {
     public static class CompositionAnimationExtensions
     {
-        public static Dictionary<string, object> ExpressionLambda<T>(this ExpressionAnimation animation, Expression<Func<ExpressionContext, T>> expression)
+        public static CompositionAnimationPropertyCollection ExpressionLambda(this ExpressionAnimation animation, Expression<Func<ExpressionContext, object>> expression)
         {
             var ce = ExpressionToCompositionExpression(expression);
             animation.Expression = ce.Expression;
@@ -19,7 +19,15 @@ namespace CompositionAnimationToolkit
             return ce.Parameters;
         }
 
-        public static KeyFrameAnimation InsertExpressionLambdaKeyFrame<T>(this KeyFrameAnimation animation, float normalizedProgressKey, Expression<Func<ExpressionContext, T>> expression)
+        public static CompositionAnimationPropertyCollection ExpressionLambda<TProperty, TTarget>(this ExpressionAnimation animation, Expression<Func<ExpressionContext<TProperty, TTarget>, object>> expression)
+        {
+            var ce = ExpressionToCompositionExpression(expression);
+            animation.Expression = ce.Expression;
+            animation.ApplyParameters(ce.Parameters);
+            return ce.Parameters;
+        }
+
+        public static KeyFrameAnimation InsertExpressionLambdaKeyFrame(this KeyFrameAnimation animation, float normalizedProgressKey, Expression<Func<ExpressionContext, object>> expression)
         {
             var ce = ExpressionToCompositionExpression(expression);
             animation.InsertExpressionKeyFrame(normalizedProgressKey, ce.Expression);
@@ -28,7 +36,7 @@ namespace CompositionAnimationToolkit
             return animation;
         }
 
-        public static T ApplyParameters<T>(this T animation, Dictionary<string, object> parameters) where T : CompositionAnimation
+        public static T ApplyParameters<T>(this T animation, CompositionAnimationPropertyCollection parameters) where T : CompositionAnimation
         {
             foreach (var p in parameters.Keys.ToList())
             {
@@ -67,28 +75,40 @@ namespace CompositionAnimationToolkit
             return animation;
         }
 
+        public static string ExpressionToPropertyName(Expression expression) {
+            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
+            if (property == null)
+                throw new ArgumentException();
+            else
+                return property;
+        }
 
-
-        public static CompositionExpression ExpressionToCompositionExpression<T>(Expression<Func<ExpressionContext, T>> expression)
+        public static CompositionExpression ExpressionToCompositionExpression(Expression expression)
         {
-            var parameters = new Dictionary<string, object>();
+            var parameters = new CompositionAnimationPropertyCollection();
             return new CompositionExpression { Expression = ExpressionToCompositionString(expression, parameters), Parameters = parameters };
         }
 
-        static string GetMemberExpression(MemberExpression m, Dictionary<string, object> parameters)
+        static string GetMemberExpression(MemberExpression m, CompositionAnimationPropertyCollection parameters)
         {
             if (m.Expression is MemberExpression)
                 return GetMemberExpression((MemberExpression)m.Expression, parameters) + "." + m.Member.Name;
             else
             {
-                if (!parameters.ContainsKey(m.Member.Name) && m.Member is FieldInfo && m.Expression is ConstantExpression)
-                    parameters.Add(m.Member.Name, ((FieldInfo)m.Member).GetValue(((ConstantExpression)m.Expression).Value));
-                return m.Member.Name;
+                if (m.Member.DeclaringType.GetTypeInfo().IsGenericType && m.Member.DeclaringType.GetGenericTypeDefinition() == typeof(ExpressionContext<,>))
+                {
+                    return "this." + m.Member.Name;
+                }
+                else
+                {
+                    if (!parameters.ContainsKey(m.Member.Name) && m.Member is FieldInfo && m.Expression is ConstantExpression)
+                        parameters.Add(m.Member.Name, ((FieldInfo)m.Member).GetValue(((ConstantExpression)m.Expression).Value));
+                    return m.Member.Name;
+                }
             }
         }
-
-
-        static string GetBinaryExpression(BinaryExpression b, Dictionary<string, object> parameters)
+        
+        static string GetBinaryExpression(BinaryExpression b, CompositionAnimationPropertyCollection parameters)
         {
             string operand = null;
 
@@ -206,7 +226,7 @@ namespace CompositionAnimationToolkit
             return GetExpressionWithParameters(b.Left, parameters) + " " + operand + " " + GetExpressionWithParameters(b.Right, parameters);
         }
 
-        static string GetUnaryExpression(UnaryExpression u, Dictionary<string, object> parameters)
+        static string GetUnaryExpression(UnaryExpression u, CompositionAnimationPropertyCollection parameters)
         {
             string operand = null;
 
@@ -246,7 +266,7 @@ namespace CompositionAnimationToolkit
             return operand + GetExpressionWithParameters(u.Operand, parameters);
         }
 
-        static string GetExpressionWithParameters(Expression exp, Dictionary<string, object> parameters)
+        static string GetExpressionWithParameters(Expression exp, CompositionAnimationPropertyCollection parameters)
         {
             if (exp is BinaryExpression)
                 return "(" + ExpressionToCompositionString(exp, parameters) + ")";
@@ -254,12 +274,12 @@ namespace CompositionAnimationToolkit
                 return ExpressionToCompositionString(exp, parameters);
         }
 
-        static string GetConditionalExpression(ConditionalExpression exp, Dictionary<string, object> parameters)
+        static string GetConditionalExpression(ConditionalExpression exp, CompositionAnimationPropertyCollection parameters)
         {
             return ExpressionToCompositionString(exp.Test, parameters) + " ? " + ExpressionToCompositionString(exp.IfTrue, parameters) + " : " + ExpressionToCompositionString(exp.IfFalse, parameters);
         }
 
-        static string GetMethodCallExpression(MethodCallExpression ca, Dictionary<string, object> parameters)
+        static string GetMethodCallExpression(MethodCallExpression ca, CompositionAnimationPropertyCollection parameters)
         {
             if (ca.Method.DeclaringType != typeof(CompositionPropertySetExtensions))
                 return ca.Method.Name + "(" + string.Join(",", ca.Arguments.Select(a => ExpressionToCompositionString(a, parameters))) + ")";
@@ -267,7 +287,7 @@ namespace CompositionAnimationToolkit
                 return ExpressionToCompositionString(ca.Arguments[0], parameters) + "." + ExpressionToCompositionString(ca.Arguments[1], parameters);
         }
 
-        static string ExpressionToCompositionString(Expression exp, Dictionary<string, object> parameters)
+        static string ExpressionToCompositionString(Expression exp, CompositionAnimationPropertyCollection parameters)
         {
 
             if (exp is BinaryExpression)
@@ -299,10 +319,11 @@ namespace CompositionAnimationToolkit
 
     public class ExpressionContext
     {
-        private ExpressionContext()
+        protected ExpressionContext()
         {
 
         }
+
         public float Abs(float value) { return 0; }
         public Vector2 Abs(Vector2 value) { return new Vector2(0); }
         public Vector3 Abs(Vector3 value) { return new Vector3(0); }
@@ -381,4 +402,12 @@ namespace CompositionAnimationToolkit
         public Vector3 Vector3(float x, float y, float z) { return default(Vector3); }
         public Vector4 Vector4(float x, float y, float z, float w) { return default(Vector4); }
     }
+
+    public class ExpressionContext<TProperty, TTarget> : ExpressionContext
+    {
+        public TProperty StartingValue { get; set; }
+        public TProperty EndValue { get; set; }
+        public TTarget Target { get; set; }
+    }
+
 }
