@@ -60,14 +60,16 @@ The ExpressionLambda will also return a dictionary with all the parameters used 
 It's now possible to start/stop animations using a lambda as well:
 
     blueSprite.StartAnimation(r => r.Offset, expressionAnimation);
-    
-Due to how generic constrains work though, the method for property set wrappers is called `StartAnimation2`
 
-## strongly typed this.* properties
+## Strongly typed this.* properties
 The this.startingvalue, this.endvalue and this.target properies in expressions are now supported by supplying those types when creating the depression. Additionally, new overloads for startanimation has been added that take an expeession direct and infer those types.
 
+    blueSprite.StartAnimation(r => r.Offset, c => redSprite.Offset + c.StartingValue);
+
 ## Type annotated property sets 
-You can now  supply a type for an existing properyset to use when creating an expression. This is useful you get a propertyset from somewhere else or if you want to animate a propery inside a propertyset
+You can now  supply a type for an existing properyset to use when creating an expression. This is useful you get a propertyset from somewhere else or if you want to animate a propery inside a propertyset.
+
+    properties.AsAnnotated<MyPropertySet>().StartAnimation(c => c.Value1, c => c.Target.Value2 + 2);
 
 ## Future work
 This library has partially been validated against the samples in https://github.com/Microsoft/WindowsUIDevLabs (in this branch https://github.com/aL3891/WindowsUIDevLabs) but that work is not complete.
