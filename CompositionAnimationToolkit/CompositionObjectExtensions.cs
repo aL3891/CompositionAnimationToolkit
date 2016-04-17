@@ -34,6 +34,8 @@ namespace CompositionAnimationToolkit
             compositionObject.StartAnimation(CompositionAnimationExtensions.ExpressionToPropertyName(expression), animation);
         }
 
+
+
         public static void StopAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression) where T : CompositionObject
         {
 

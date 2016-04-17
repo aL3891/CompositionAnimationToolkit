@@ -9,7 +9,7 @@ namespace CompositionAnimationToolkit
 {
     public class CompositionPropertySetWrapper
     {
-        public CompositionPropertySet PropertySet { get; set; }
+        internal CompositionPropertySet PropertySet { get; set; }
 
         public CompositionPropertySetWrapper(Compositor copositor)
         {
@@ -20,8 +20,7 @@ namespace CompositionAnimationToolkit
         {
             PropertySet = propertySet;
         }
-
-
+        
         public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
             PropertySet.StartAnimation(propertyName, animation);
@@ -143,28 +142,13 @@ namespace CompositionAnimationToolkit
         {
             PropertySet.InsertVector4(key, value);
         }
-
-
     }
 
     public static class CompositionPropertySetWrapperExtensions
     {
-        public static void StartAnimation2<T, R>(this T compositionObject, Expression<Func<T, R>> expression, CompositionAnimation animation) where T : CompositionPropertySetWrapper
+        public static TypeAnnotatedCompositionObject<T> ToPropertySet<T>(this T compositionObject) where T : CompositionPropertySetWrapper
         {
-            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
-            if (property == null)
-                throw new ArgumentException();
-
-            compositionObject.StartAnimation(property, animation);
-        }
-
-        public static void StopAnimation2<T, R>(this T compositionObject, Expression<Func<T, R>> expression) where T : CompositionPropertySetWrapper
-        {
-            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
-            if (property == null)
-                throw new ArgumentException();
-
-            compositionObject.StopAnimation(property);
+            return new TypeAnnotatedCompositionObject<T> { Target = compositionObject.PropertySet };
         }
     }
 }
