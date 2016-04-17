@@ -63,6 +63,12 @@ It's now possible to start/stop animations using a lambda as well:
     
 Due to how generic constrains work though, the method for property set wrappers is called `StartAnimation2`
 
+## strongly typed this.* properties
+The this.startingvalue, this.endvalue and this.target properies in expressions are now supported by supplying those types when creating the depression. Additionally, new overloads for startanimation has been added that take an expeession direct and infer those types.
+
+## Type annotated property sets 
+You can now  supply a type for an existing properyset to use when creating an expression. This is useful you get a propertyset from somewhere else or if you want to animate a propery inside a propertyset
+
 ## Future work
 This library has partially been validated against the samples in https://github.com/Microsoft/WindowsUIDevLabs (in this branch https://github.com/aL3891/WindowsUIDevLabs) but that work is not complete.
 In addition i'd like to look at if story boards can perhaps be converted to composition animations. Another idea is to implement currently unsupported functions like dot product as expanded expressions.
