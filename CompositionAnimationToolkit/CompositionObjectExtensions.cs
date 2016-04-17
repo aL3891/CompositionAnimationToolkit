@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CompositionAnimationToolkit.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -10,13 +11,11 @@ namespace CompositionAnimationToolkit
 {
     public static class CompositionObjectExtensions
     {
-        public static TargetedCompositionAnimation StartAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, Expression<Func<ExpressionContext<R, T>, object>> animationexpression) where T : CompositionObject
+        public static TargetedCompositionAnimation CreateAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, Expression<Func<ExpressionContext<R, T>, object>> animationexpression) where T : CompositionObject
         {
             var property = CompositionAnimationExtensions.ExpressionToPropertyName(expression);
             var animation = compositionObject.Compositor.CreateExpressionAnimation();
             var props = animation.ExpressionLambda(animationexpression);
-
-            compositionObject.StartAnimation(property, animation);
 
             return new TargetedCompositionAnimation
             {
@@ -27,18 +26,35 @@ namespace CompositionAnimationToolkit
             };
         }
 
-
-        public static void StartAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, CompositionAnimation animation) where T : CompositionObject
+        public static TargetedCompositionAnimation StartAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, Expression<Func<ExpressionContext<R, T>, object>> animationexpression) where T : CompositionObject
         {
-
-            compositionObject.StartAnimation(CompositionAnimationExtensions.ExpressionToPropertyName(expression), animation);
+            var res = compositionObject.CreateAnimation(expression, animationexpression);
+            res.Start();
+            return res;
         }
 
+        public static TargetedCompositionAnimation CreateAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, CompositionAnimation animation) where T : CompositionObject
+        {
+            var res = new TargetedCompositionAnimation
+            {
+                Animation = animation,
+                Target = compositionObject,
+                TargetProperty = CompositionAnimationExtensions.ExpressionToPropertyName(expression)
+            };
 
+            compositionObject.StartAnimation(res.TargetProperty, animation);
+            return res;
+        }
+
+        public static TargetedCompositionAnimation StartAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression, CompositionAnimation animation) where T : CompositionObject
+        {
+            var res = compositionObject.CreateAnimation(expression, animation);
+            res.Start();
+            return res;
+        }
 
         public static void StopAnimation<T, R>(this T compositionObject, Expression<Func<T, R>> expression) where T : CompositionObject
         {
-
             compositionObject.StopAnimation(CompositionAnimationExtensions.ExpressionToPropertyName(expression));
         }
 

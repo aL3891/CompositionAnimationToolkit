@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CompositionAnimationToolkit.Internal;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -13,7 +14,7 @@ namespace CompositionAnimationToolkit
 
         public CompositionObject Get(string property)
         {
-            return  (CompositionObject)this[property] ;
+            return (CompositionObject)this[property];
         }
 
         public TypeAnnotatedCompositionObject<R> Get<R>(string property)
@@ -32,36 +33,4 @@ namespace CompositionAnimationToolkit
         }
     }
 
-    public class TypeAnnotatedCompositionObject<T>
-    {
-        public CompositionObject Target { get; set; }
-
-        public void StartAnimation<R>(Expression<Func<T, R>> expression, CompositionAnimation animation)
-        {
-            Target.StartAnimation(CompositionAnimationExtensions.ExpressionToPropertyName(expression), animation);
-        }
-
-        public TargetedCompositionAnimation StartAnimation<R>(Expression<Func<T, R>> expression, Expression<Func<ExpressionContext<R, T>, object>> animationexpression)
-        {
-            var property = CompositionAnimationExtensions.ExpressionToPropertyName(expression);
-
-            var animation = Target.Compositor.CreateExpressionAnimation();
-            var props = animation.ExpressionLambda(animationexpression);
-
-            Target.StartAnimation(property, animation);
-
-            return new TargetedCompositionAnimation
-            {
-                Animation = animation,
-                Properties = props,
-                Target = Target,
-                TargetProperty = property
-            };
-        }
-
-        public void StopAnimation<T, R>(Expression<Func<T, R>> expression) where T : CompositionObject
-        {
-            Target.StopAnimation(CompositionAnimationExtensions.ExpressionToPropertyName(expression));
-        }
-    }
 }

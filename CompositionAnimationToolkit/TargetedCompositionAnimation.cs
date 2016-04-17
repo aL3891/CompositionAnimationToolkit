@@ -13,5 +13,10 @@ namespace CompositionAnimationToolkit
         public string TargetProperty { get; set; }
         public CompositionAnimation Animation { get; set; }
         public CompositionAnimationPropertyCollection Properties { get; set; }
+
+        public void Start()
+        {
+            Target.StartAnimation(TargetProperty, Animation);
+        }
     }
 }
