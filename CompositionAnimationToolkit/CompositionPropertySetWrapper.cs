@@ -146,9 +146,6 @@ namespace CompositionAnimationToolkit
 
     public static class CompositionPropertySetWrapperExtensions
     {
-        public static TypeAnnotatedCompositionObject<T> ToPropertySet<T>(this T compositionObject) where T : CompositionPropertySetWrapper
-        {
-            return new TypeAnnotatedCompositionObject<T> { Target = compositionObject.PropertySet };
-        }
+        public static TypeAnnotatedCompositionObject<T> ToPropertySet<T>(this T compositionObject) where T : CompositionPropertySetWrapper => new TypeAnnotatedCompositionObject<T> { Target = compositionObject.PropertySet };
     }
 }

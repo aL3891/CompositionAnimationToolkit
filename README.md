@@ -61,6 +61,11 @@ It's now possible to start/stop animations using a lambda as well:
 
     blueSprite.StartAnimation(r => r.Offset, expressionAnimation);
 
+## Starting animations with an inline expression
+It's now possible to start animations with an inline expression:
+
+    blueSprite.StartAnimation(r => r.Offset, c => redSprite.Offset + otherVisual.Offset);
+
 ## Strongly typed this.* properties
 The this.startingvalue, this.endvalue and this.target properies in expressions are now supported by supplying those types when creating the depression. Additionally, new overloads for startanimation has been added that take an expeession direct and infer those types.
 

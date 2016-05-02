@@ -12,25 +12,13 @@ namespace CompositionAnimationToolkit
     public class CompositionAnimationPropertyCollection : Dictionary<string, object>
     {
 
-        public CompositionObject Get(string property)
-        {
-            return (CompositionObject)this[property];
-        }
+        public CompositionObject Get(string property) => (CompositionObject)this[property];
 
-        public TypeAnnotatedCompositionObject<R> Get<R>(string property)
-        {
-            return new TypeAnnotatedCompositionObject<R> { Target = (CompositionObject)this[property] };
-        }
+        public TypeAnnotatedCompositionObject<R> Get<R>(string property) => new TypeAnnotatedCompositionObject<R> { Target = (CompositionObject)this[property] };
 
-        public TypeAnnotatedCompositionObject<R> Get<R>(Expression<Func<R>> expression)
-        {
-            return new TypeAnnotatedCompositionObject<R> { Target = (CompositionObject)this[CompositionAnimationExtensions.ExpressionToPropertyName(expression)] };
-        }
+        public TypeAnnotatedCompositionObject<R> Get<R>(Expression<Func<R>> expression) => new TypeAnnotatedCompositionObject<R> { Target = (CompositionObject)this[ExpressionHelper.ExpressionToPropertyName(expression)] };
 
-        public R Get<T, R>(T target, Expression<Func<T, R>> expression)
-        {
-            return (R)this[CompositionAnimationExtensions.ExpressionToPropertyName(expression)];
-        }
+        public R Get<T, R>(T target, Expression<Func<T, R>> expression) => (R)this[ExpressionHelper.ExpressionToPropertyName(expression)];
     }
 
 }
