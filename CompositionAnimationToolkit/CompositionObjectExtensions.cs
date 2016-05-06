@@ -28,32 +28,4 @@ namespace CompositionAnimationToolkit
         public static TypeAnnotatedCompositionObject<R> AsAnnotated<R>(this CompositionObject input, R instance) => new TypeAnnotatedCompositionObject<R> { Target = input };
         public static TypeAnnotatedCompositionObject<T> AsAnnotated<T>(this CompositionObject input) => new TypeAnnotatedCompositionObject<T> { Target = input };
     }
-
-
-
-    public class AnimationOptions
-    {
-        public static AnimationOptions Default { get; set; }
-
-        static AnimationOptions()
-        {
-            Default = new AnimationOptions
-            {
-                Count = 1
-            };
-        }
-
-
-
-
-        public int Count { get; set; }
-        public CompositionEasingFunction EaseIn { get; set; }
-        public CompositionEasingFunction EaseOut { get; set; }
-    }
-
-    public class KeyFrame<T>
-    {
-        public T Value { get; set; }
-        public float Time { get; set; }
-    }
 }

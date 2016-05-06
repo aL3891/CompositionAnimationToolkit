@@ -11,14 +11,26 @@ namespace CompositionAnimationToolkit
     public class TargetedExpressionAnimation : TargetedCompositionAnimation
     {
         private Expression animationexpression;
-        private CompositionObject compositionObject;
+
         private Expression expression;
 
         public TargetedExpressionAnimation(CompositionObject compositionObject, Expression expression, Expression animationexpression)
         {
-            this.compositionObject = compositionObject;
+            Target = compositionObject;
             this.expression = expression;
             this.animationexpression = animationexpression;
+        }
+
+        public override TargetedCompositionAnimation Start()
+        {
+            TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
+            var animation = Target.Compositor.CreateExpressionAnimation();
+            Animation = animation;
+            var ce = ExpressionHelper.ExpressionToCompositionExpression(animationexpression);
+            Properties = ce.Parameters;
+            animation.Expression = ce.Expression;
+            ExpressionHelper.ApplyParameters(Animation, ce.Parameters);
+            return base.Start();
         }
     }
 }

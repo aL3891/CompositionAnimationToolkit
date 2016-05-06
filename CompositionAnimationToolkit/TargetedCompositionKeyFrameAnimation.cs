@@ -36,18 +36,30 @@ namespace CompositionAnimationToolkit
             if (Animation == null)
             {
                 var ani = createAnimation(Target.Compositor);
-                var property = ExpressionHelper.ExpressionToPropertyName(expression);
+                TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
 
-                var step = 1f / values.Length;
-                for (int i = 0; i < values.Length; i++)
+                if (values.Length == 1)
                 {
-                    if (i == 0 && easeIn != null)
-                        insertEasingKey(ani, step * i, values[i], easeIn);
-                    else if (i == values.Length - 1 && easeOut != null)
-                        insertEasingKey(ani, step * i, values[i], easeOut);
+                    if (easeOut != null)
+                        insertEasingKey(ani, 1, values[0], easeOut);
                     else
-                        insertKey(ani, step * i, values[i]);
+                        insertKey(ani, 1, values[0]);
                 }
+                else
+                {
+                    var step = 1f / (values.Length - 1);
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        if (i == 0 && easeIn != null)
+                            insertEasingKey(ani, step * i, values[i], easeIn);
+                        else if (i == values.Length - 1 && easeOut != null)
+                            insertEasingKey(ani, step * i, values[i], easeOut);
+                        else
+                            insertKey(ani, step * i, values[i]);
+                    }
+
+                }
+
 
                 ani.Duration = TimeSpan.FromMilliseconds(duration);
                 if (count > 0)
@@ -86,12 +98,17 @@ namespace CompositionAnimationToolkit
             return this;
         }
 
-        public TargetedKeyFrameAnimation<TValue, Tanimation> Count(int c)
+        public TargetedKeyFrameAnimation<TValue, Tanimation> Loop(int c)
         {
             count = c;
             return this;
         }
 
+        public TargetedKeyFrameAnimation<TValue, Tanimation> Loop()
+        {
+            count = -1;
+            return this;
+        }
     }
 
 }

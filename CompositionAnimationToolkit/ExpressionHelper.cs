@@ -14,7 +14,7 @@ namespace CompositionAnimationToolkit
 {
     internal static class ExpressionHelper
     {
-        public static CompositionAnimationPropertyCollection ExpressionLambda(ExpressionAnimation animation, Expression expression)
+        internal static CompositionAnimationPropertyCollection ExpressionLambda(ExpressionAnimation animation, Expression expression)
         {
             var ce = ExpressionToCompositionExpression(expression);
             animation.Expression = ce.Expression;
@@ -22,8 +22,7 @@ namespace CompositionAnimationToolkit
             return ce.Parameters;
         }
 
-
-        public static KeyFrameAnimation InsertExpressionLambdaKeyFrame(KeyFrameAnimation animation, float normalizedProgressKey, Expression expression)
+        internal static KeyFrameAnimation InsertExpressionLambdaKeyFrame(KeyFrameAnimation animation, float normalizedProgressKey, Expression expression)
         {
             var ce = ExpressionToCompositionExpression(expression);
             animation.InsertExpressionKeyFrame(normalizedProgressKey, ce.Expression);
@@ -32,7 +31,16 @@ namespace CompositionAnimationToolkit
             return animation;
         }
 
-        static CompositionAnimation ApplyParameters(CompositionAnimation animation, CompositionAnimationPropertyCollection parameters)
+        internal static string ExpressionToPropertyName(Expression expression)
+        {
+            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
+            if (property == null)
+                throw new ArgumentException();
+            else
+                return property;
+        }
+
+        internal static CompositionAnimation ApplyParameters(CompositionAnimation animation, CompositionAnimationPropertyCollection parameters)
         {
             foreach (var p in parameters.Keys.ToList())
             {
@@ -69,18 +77,8 @@ namespace CompositionAnimationToolkit
 
             }
             return animation;
-        }
-
-
-        public static string ExpressionToPropertyName(Expression expression)
-        {
-            var property = ((expression as LambdaExpression)?.Body as MemberExpression)?.Member.Name;
-            if (property == null)
-                throw new ArgumentException();
-            else
-                return property;
-        }
-
+        }       
+        
         internal static CompositionExpression ExpressionToCompositionExpression(Expression expression)
         {
             var parameters = new CompositionAnimationPropertyCollection();
