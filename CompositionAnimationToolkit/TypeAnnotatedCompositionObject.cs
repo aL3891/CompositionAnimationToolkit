@@ -26,6 +26,19 @@ namespace CompositionAnimationToolkit
         public TargetedKeyFrameAnimation<Quaternion, QuaternionKeyFrameAnimation> CreateAnimation(Expression<Func<T, Quaternion>> expression, params Quaternion[] values) => new TargetedKeyFrameAnimation<Quaternion, QuaternionKeyFrameAnimation>(Target, expression, c => c.CreateQuaternionKeyFrameAnimation(), (a, t, v) => a.InsertKeyFrame(t, v), (a, t, v, e) => a.InsertKeyFrame(t, v, e), values);
         public TargetedKeyFrameAnimation<Color, ColorKeyFrameAnimation> CreateAnimation(Expression<Func<T, Color>> expression, params Color[] values) => new TargetedKeyFrameAnimation<Color, ColorKeyFrameAnimation>(Target, expression, c => c.CreateColorKeyFrameAnimation(), (a, t, v) => a.InsertKeyFrame(t, v), (a, t, v, e) => a.InsertKeyFrame(t, v, e), values);
 
+
+        public TargetedCompositionAnimation StartAnimation<R>(Expression<Func<T, R>> expression, CompositionAnimation animation) => CreateAnimation(expression, animation).Start();
+
+        public TargetedExpressionAnimation StartAnimation<R>(Expression<Func<T, R>> expression, Expression<Func<ExpressionContext<R, T>, object>> animationexpression) => (TargetedExpressionAnimation)CreateAnimation(expression, animationexpression).Start();
+
+        public TargetedKeyFrameAnimation<float, ScalarKeyFrameAnimation> StartAnimation(Expression<Func<T, float>> expression, params float[] values) => (TargetedKeyFrameAnimation<float, ScalarKeyFrameAnimation>)CreateAnimation(expression, values);
+        public TargetedKeyFrameAnimation<Vector2, Vector2KeyFrameAnimation> StartAnimation(Expression<Func<T, Vector2>> expression, params Vector2[] values) => (TargetedKeyFrameAnimation<Vector2, Vector2KeyFrameAnimation>)CreateAnimation(expression, values).Start();
+        public TargetedKeyFrameAnimation<Vector3, Vector3KeyFrameAnimation> StartAnimation(Expression<Func<T, Vector3>> expression, params Vector3[] values) => (TargetedKeyFrameAnimation<Vector3, Vector3KeyFrameAnimation>)CreateAnimation(expression, values).Start();
+        public TargetedKeyFrameAnimation<Vector4, Vector4KeyFrameAnimation> StartAnimation(Expression<Func<T, Vector4>> expression, params Vector4[] values) => (TargetedKeyFrameAnimation<Vector4, Vector4KeyFrameAnimation>)CreateAnimation(expression, values).Start();
+        public TargetedKeyFrameAnimation<Quaternion, QuaternionKeyFrameAnimation> StartAnimation(Expression<Func<T, Quaternion>> expression, params Quaternion[] values) => (TargetedKeyFrameAnimation<Quaternion, QuaternionKeyFrameAnimation>)CreateAnimation(expression, values).Start();
+        public TargetedKeyFrameAnimation<Color, ColorKeyFrameAnimation> StartAnimation(Expression<Func<T, Color>> expression, params Color[] values) => (TargetedKeyFrameAnimation<Color, ColorKeyFrameAnimation>)CreateAnimation(expression, values).Start();
+
+
         public void StopAnimation<R>(Expression<Func<T, R>> expression)
         {
             Target.StopAnimation(ExpressionHelper.ExpressionToPropertyName(expression));

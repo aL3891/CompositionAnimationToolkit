@@ -76,6 +76,24 @@ You can now  supply a type for an existing properyset to use when creating an ex
 
     properties.AsAnnotated<MyPropertySet>().StartAnimation(c => c.Value1, c => c.Target.Value2 + 2);
 
+
+## Type inferred key frame animations and fluent api
+Typically, creating keyframe animations requires a few diffrent method calls: 
+
+	Vector3KeyFrameAnimation offsetAnimation = compositor.CreateVector3KeyFrameAnimation();
+	offsetAnimation.InsertKeyFrame(0.0f, new Vector3(0, 0, 0));
+	offsetAnimation.InsertKeyFrame(0.5f, new Vector3(0, 0, -2000));
+	offsetAnimation.InsertKeyFrame(1.0f, new Vector3(0, 0, 0));
+	offsetAnimation.Duration = TimeSpan.FromMilliseconds(8000);
+	offsetAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
+	visual.StartAnimation("Offset", offsetAnimation);
+
+using the new apis this can instead be written as
+
+	visual.StartAnimation(r => r.Offset, new Vector3(0, 0, 0), new Vector3(0, 0, -2000), new Vector3(0, 0, 0)).Duration(8000).Loop();
+
+This will infer the type of the property from the expression and create and create the correct keyframe type. it will then add the values as keyframes evenly spaced out across the duration.
+
 ## Future work
 This library has partially been validated against the samples in https://github.com/Microsoft/WindowsUIDevLabs (in this branch https://github.com/aL3891/WindowsUIDevLabs) but that work is not complete.
 In addition i'd like to look at if story boards can perhaps be converted to composition animations. Another idea is to implement currently unsupported functions like dot product as expanded expressions.
