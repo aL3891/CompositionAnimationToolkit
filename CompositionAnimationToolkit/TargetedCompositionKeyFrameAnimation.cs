@@ -11,25 +11,73 @@ namespace CompositionAnimationToolkit
     public class TargetedKeyFrameAnimation<TValue, Tanimation> : TargetedCompositionAnimation where Tanimation : KeyFrameAnimation
     {
         Func<Compositor, Tanimation> createAnimation;
-        Action<Tanimation, float, TValue> insertKey;
+
         Action<Tanimation, float, TValue, CompositionEasingFunction> insertEasingKey;
 
         Expression expression;
         int duration = 500;
         int count = 1;
-        CompositionEasingFunction easeIn;
-        CompositionEasingFunction easeOut;
-        public TValue[] values;
+        List<KeyFrame<TValue>> Values;
+        private int delay;
 
-        internal TargetedKeyFrameAnimation(CompositionObject compositionObject, Expression expression, Func<Compositor, Tanimation> createAnimation, Action<Tanimation, float, TValue> insertKey, Action<Tanimation, float, TValue, CompositionEasingFunction> insertEasingKey, TValue[] values)
+
+
+        internal TargetedKeyFrameAnimation(CompositionObject compositionObject, Expression expression, Func<Compositor, Tanimation> createAnimation, Action<Tanimation, float, TValue, CompositionEasingFunction> insertEasingKey, KeyFrame<TValue>[] values)
         {
             this.createAnimation = createAnimation;
-            this.insertKey = insertKey;
             this.insertEasingKey = insertEasingKey;
             Target = compositionObject;
             this.expression = expression;
-            this.values = values;
+            Values = values.ToList();
+
+            DistributeKeyFrames();
         }
+
+        private void DistributeKeyFrames()
+        {
+            var length = Values.Count;
+
+            if (length > 0)
+            {
+                float start = 0, end = 1;
+                int startIndex = 0, endIndex = length - 1;
+
+                for (int i = 0; i < length; i++)
+                {
+                    if (Values[i].Floating)
+                    {
+                        var next = Values.Skip(i + 1).FirstOrDefault(k => !k.Floating);
+                        if (next != null)
+                        {
+                            endIndex = Values.IndexOf(next);
+                            end = next.TimeStamp;
+                        }
+                        else
+                        {
+                            endIndex = length - 1;
+                            end = 1;
+                        }
+
+                        Values[i].TimeStamp = lerp(start, end, normalize(startIndex, endIndex, i));
+                        Values[i].Floating = true;
+                    }
+                    else
+                    {
+                        startIndex = i;
+                        start = Values[i].TimeStamp;
+                    }
+                }
+            }
+        }
+
+        public int Count => Values.Count;
+
+        public KeyFrame<TValue> this[int index] => Values[index];
+
+
+        float normalize(float min, float max, float pos) => (pos - min) / (max - min);
+
+        float lerp(float value1, float value2, float pos) => (1 - pos) * value1 + pos * value2;
 
         public override TargetedCompositionAnimation Start()
         {
@@ -38,39 +86,22 @@ namespace CompositionAnimationToolkit
                 var ani = createAnimation(Target.Compositor);
                 TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
 
-                if (values.Length == 1)
-                {
-                    if (easeOut != null)
-                        insertEasingKey(ani, 1, values[0], easeOut);
-                    else
-                        insertKey(ani, 1, values[0]);
-                }
+                if (Values.Count == 1)
+                    insertEasingKey(ani, 1, Values[0].Value, Values[0].Easeing);
                 else
-                {
-                    var step = 1f / (values.Length - 1);
-                    for (int i = 0; i < values.Length; i++)
-                    {
-                        if (i == 0 && easeIn != null)
-                            insertEasingKey(ani, step * i, values[i], easeIn);
-                        else if (i == values.Length - 1 && easeOut != null)
-                            insertEasingKey(ani, step * i, values[i], easeOut);
-                        else
-                            insertKey(ani, step * i, values[i]);
-                    }
-
-                }
+                    foreach (var item in Values)
+                        insertEasingKey(ani, item.TimeStamp, item.Value, item.Easeing);
 
 
                 ani.Duration = TimeSpan.FromMilliseconds(duration);
+                ani.DelayTime = TimeSpan.FromMilliseconds(delay);
                 if (count > 0)
                 {
                     ani.IterationBehavior = AnimationIterationBehavior.Count;
                     ani.IterationCount = count;
                 }
                 else
-                {
                     ani.IterationBehavior = AnimationIterationBehavior.Forever;
-                }
 
                 Animation = ani;
             }
@@ -80,21 +111,34 @@ namespace CompositionAnimationToolkit
             return this;
         }
 
+        public TargetedKeyFrameAnimation<TValue, Tanimation> InsertKeyframe(KeyFrame<TValue> keyFrame)
+        {
+            Values.Insert(Values.IndexOf(Values.First(k => keyFrame.TimeStamp > k.TimeStamp)), keyFrame);
+            DistributeKeyFrames();
+            return this;
+        }
+
         public TargetedKeyFrameAnimation<TValue, Tanimation> EaseIn(CompositionEasingFunction func)
         {
-            easeIn = func;
+            Values[0].Easeing = func;
             return this;
         }
 
         public TargetedKeyFrameAnimation<TValue, Tanimation> EaseOut(CompositionEasingFunction func)
         {
-            easeOut = func;
+            Values.Last().Easeing = func;
             return this;
         }
 
         public TargetedKeyFrameAnimation<TValue, Tanimation> Duration(int time)
         {
             duration = time;
+            return this;
+        }
+
+        public TargetedKeyFrameAnimation<TValue, Tanimation> Delay(int time)
+        {
+            delay = time;
             return this;
         }
 

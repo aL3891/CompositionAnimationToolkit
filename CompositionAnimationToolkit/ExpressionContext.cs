@@ -5,6 +5,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using Windows.UI;
+using Windows.UI.Composition;
 
 namespace CompositionAnimationToolkit.Internal
 {
@@ -92,11 +93,12 @@ namespace CompositionAnimationToolkit.Internal
         public Vector3 Vector3(float x, float y, float z) => default(Vector3);
         public Vector4 Vector4(float x, float y, float z, float w) => default(Vector4);
     }
-
+    
     public class ExpressionContext<TProperty, TTarget> : ExpressionContext
     {
         public TProperty StartingValue { get; set; }
         public TProperty EndValue { get; set; }
         public TTarget Target { get; set; }
     }
+    
 }

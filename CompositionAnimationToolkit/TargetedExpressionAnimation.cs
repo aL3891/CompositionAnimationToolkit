@@ -23,13 +23,19 @@ namespace CompositionAnimationToolkit
 
         public override TargetedCompositionAnimation Start()
         {
-            TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
-            var animation = Target.Compositor.CreateExpressionAnimation();
-            Animation = animation;
-            var ce = ExpressionHelper.ExpressionToCompositionExpression(animationexpression);
-            Properties = ce.Parameters;
-            animation.Expression = ce.Expression;
-            ExpressionHelper.ApplyParameters(Animation, ce.Parameters);
+            if(Animation == null) {
+                TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
+                var animation = Target.Compositor.CreateExpressionAnimation();
+
+                var ce = ExpressionHelper.ExpressionToCompositionExpression(animationexpression);
+                Properties = ce.Parameters;
+                animation.Expression = ce.Expression;
+                ExpressionHelper.ApplyParameters(Animation, ce.Parameters);
+
+                Animation = animation;
+
+            }
+
             return base.Start();
         }
     }
