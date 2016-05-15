@@ -83,6 +83,9 @@ namespace CompositionAnimationToolkit
         {
             if (Animation == null)
             {
+                Values = Values.OrderBy(k => k.TimeStamp).ToList();
+                DistributeKeyFrames();
+
                 var ani = createAnimation(Target.Compositor);
                 TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
 
@@ -113,7 +116,19 @@ namespace CompositionAnimationToolkit
 
         public TargetedKeyFrameAnimation<TValue, Tanimation> InsertKeyframe(KeyFrame<TValue> keyFrame)
         {
-            Values.Insert(Values.IndexOf(Values.First(k => keyFrame.TimeStamp > k.TimeStamp)), keyFrame);
+            if (keyFrame.TimeStamp < 0)
+            {
+                keyFrame.TimeStamp = 1;
+                keyFrame.Floating = true;
+            }
+
+            //var prepend = Values.FirstOrDefault(k => keyFrame.TimeStamp > k.TimeStamp);
+            //if (prepend != null)
+            //    Values.Insert(Values.IndexOf(prepend), keyFrame);            
+            //else
+                Values.Add(keyFrame);
+
+            Values = Values.OrderBy(k => k.TimeStamp).ToList();
             DistributeKeyFrames();
             return this;
         }
