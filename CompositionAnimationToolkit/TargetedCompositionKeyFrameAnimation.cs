@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Composition;
 
 namespace CompositionAnimationToolkit
@@ -19,8 +17,6 @@ namespace CompositionAnimationToolkit
         int count = 1;
         List<KeyFrame<TValue>> Values;
         private int delay;
-
-
 
         internal TargetedKeyFrameAnimation(CompositionObject compositionObject, Expression expression, Func<Compositor, Tanimation> createAnimation, Action<Tanimation, float, TValue, CompositionEasingFunction> insertEasingKey, KeyFrame<TValue>[] values)
         {
@@ -58,7 +54,7 @@ namespace CompositionAnimationToolkit
                             end = 1;
                         }
 
-                        Values[i].TimeStamp = lerp(start, end, normalize(startIndex, endIndex, i));
+                        Values[i].TimeStamp = Lerp(start, end, Normalize(startIndex, endIndex, i));
                         Values[i].Floating = true;
                     }
                     else
@@ -74,12 +70,11 @@ namespace CompositionAnimationToolkit
 
         public KeyFrame<TValue> this[int index] => Values[index];
 
+        private float Normalize(float min, float max, float pos) => (pos - min) / (max - min);
 
-        float normalize(float min, float max, float pos) => (pos - min) / (max - min);
+        private float Lerp(float value1, float value2, float pos) => (1 - pos) * value1 + pos * value2;
 
-        float lerp(float value1, float value2, float pos) => (1 - pos) * value1 + pos * value2;
-
-        public override TargetedCompositionAnimation Start()
+        public override void EnsureAnimationCreated()
         {
             if (Animation == null)
             {
@@ -90,10 +85,10 @@ namespace CompositionAnimationToolkit
                 TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
 
                 if (Values.Count == 1)
-                    insertEasingKey(ani, 1, Values[0].Value, Values[0].Easeing);
-                else
-                    foreach (var item in Values)
-                        insertEasingKey(ani, item.TimeStamp, item.Value, item.Easeing);
+                    Values[0].TimeStamp = 1;
+
+                foreach (var item in Values)
+                    insertEasingKey(ani, item.TimeStamp, item.Value, item.Easeing);
 
 
                 ani.Duration = TimeSpan.FromMilliseconds(duration);
@@ -108,11 +103,8 @@ namespace CompositionAnimationToolkit
 
                 Animation = ani;
             }
-
-            Target.StartAnimation(TargetProperty, Animation);
-
-            return this;
         }
+
 
         public TargetedKeyFrameAnimation<TValue, Tanimation> InsertKeyframe(KeyFrame<TValue> keyFrame)
         {
@@ -122,11 +114,7 @@ namespace CompositionAnimationToolkit
                 keyFrame.Floating = true;
             }
 
-            //var prepend = Values.FirstOrDefault(k => keyFrame.TimeStamp > k.TimeStamp);
-            //if (prepend != null)
-            //    Values.Insert(Values.IndexOf(prepend), keyFrame);            
-            //else
-                Values.Add(keyFrame);
+            Values.Add(keyFrame);
 
             Values = Values.OrderBy(k => k.TimeStamp).ToList();
             DistributeKeyFrames();
@@ -135,7 +123,7 @@ namespace CompositionAnimationToolkit
 
         public TargetedKeyFrameAnimation<TValue, Tanimation> EaseIn(CompositionEasingFunction func)
         {
-            Values[0].Easeing = func;
+            Values.First().Easeing = func;
             return this;
         }
 
@@ -169,5 +157,4 @@ namespace CompositionAnimationToolkit
             return this;
         }
     }
-
 }

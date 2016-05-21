@@ -1,17 +1,12 @@
-﻿using CompositionAnimationToolkit.Internal;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Composition;
 
 namespace CompositionAnimationToolkit
 {
     public class CompositionAnimationPropertyCollection : Dictionary<string, object>
     {
-
         public CompositionObject Get(string property) => (CompositionObject)this[property];
 
         public TypeAnnotatedCompositionObject<R> Get<R>(string property) => new TypeAnnotatedCompositionObject<R> { Target = (CompositionObject)this[property] };

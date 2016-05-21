@@ -1,20 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using Windows.UI.Composition;
 
 namespace CompositionAnimationToolkit
 {
     public class TargetedCompositionAnimation
     {
-       
+        public CompositionObject Target { get; set; }
+        public string TargetProperty { get; set; }
+        public CompositionAnimation Animation { get; set; }
+        public CompositionAnimationPropertyCollection Properties { get; set; }
+
         public TargetedCompositionAnimation(CompositionObject compositionObject, Expression expression, CompositionAnimation animation)
         {
             Target = compositionObject;
-            TargetProperty  = ExpressionHelper.ExpressionToPropertyName(expression);
+            TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
             Animation = animation;
         }
 
@@ -23,15 +22,19 @@ namespace CompositionAnimationToolkit
 
         }
 
-        public CompositionObject Target { get; set; }
-        public string TargetProperty { get; set; }
-        public CompositionAnimation Animation { get; set; }
-        public CompositionAnimationPropertyCollection Properties { get; set; }
-
-        public virtual TargetedCompositionAnimation Start()
+        public virtual void EnsureAnimationCreated()
         {
-            Target.StartAnimation(TargetProperty, Animation);
-            return this;
+
+        }
+    }
+
+    public static class TargetedCompositionAnimationExtensions
+    {
+        public static T Start<T>(this T animation) where T : TargetedCompositionAnimation
+        {
+            animation.EnsureAnimationCreated();
+            animation.Target.StartAnimation(animation.TargetProperty, animation.Animation);
+            return animation;
         }
     }
 }

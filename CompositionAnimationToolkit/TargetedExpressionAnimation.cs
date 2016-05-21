@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq.Expressions;
 using Windows.UI.Composition;
 
 namespace CompositionAnimationToolkit
@@ -21,9 +16,10 @@ namespace CompositionAnimationToolkit
             this.animationexpression = animationexpression;
         }
 
-        public override TargetedCompositionAnimation Start()
+        public override void EnsureAnimationCreated()
         {
-            if(Animation == null) {
+            if (Animation == null)
+            {
                 TargetProperty = ExpressionHelper.ExpressionToPropertyName(expression);
                 var animation = Target.Compositor.CreateExpressionAnimation();
 
@@ -33,10 +29,8 @@ namespace CompositionAnimationToolkit
                 ExpressionHelper.ApplyParameters(Animation, ce.Parameters);
 
                 Animation = animation;
-
             }
-
-            return base.Start();
         }
+
     }
 }

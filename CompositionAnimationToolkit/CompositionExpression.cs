@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace CompositionAnimationToolkit
+﻿namespace CompositionAnimationToolkit
 {
     public class CompositionExpression
     {

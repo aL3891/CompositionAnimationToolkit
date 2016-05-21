@@ -1,11 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 using Windows.UI;
-using Windows.UI.Composition;
 
 namespace CompositionAnimationToolkit.Internal
 {
@@ -99,6 +93,5 @@ namespace CompositionAnimationToolkit.Internal
         public TProperty StartingValue { get; set; }
         public TProperty EndValue { get; set; }
         public TTarget Target { get; set; }
-    }
-    
+    }    
 }

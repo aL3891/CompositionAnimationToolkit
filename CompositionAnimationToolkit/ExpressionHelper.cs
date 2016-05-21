@@ -1,12 +1,9 @@
 ﻿using CompositionAnimationToolkit.Internal;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Numerics;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI;
 using Windows.UI.Composition;
 
@@ -308,6 +305,5 @@ namespace CompositionAnimationToolkit
                     throw new ArgumentException(exp.NodeType.ToString());
             }
         }
-
     }
 }

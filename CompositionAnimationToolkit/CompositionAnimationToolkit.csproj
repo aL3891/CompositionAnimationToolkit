@@ -115,6 +115,7 @@
     <Compile Include="CompositionPropertySetWrapper.cs" />
     <Compile Include="ExpressionContext.cs" />
     <Compile Include="ExpressionHelper.cs" />
+    <Compile Include="KeyFrame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="TargetedCompositionAnimation.cs" />
     <Compile Include="TargetedCompositionKeyFrameAnimation.cs" />
